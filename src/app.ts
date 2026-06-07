@@ -14,6 +14,13 @@ export async function startApp(container: HTMLElement): Promise<void> {
   const objects = await loadCatalog();
   const satrecs = objects.map((o) => twoline2satrec(o.tleLine1, o.tleLine2));
 
+  // Small status readout (confirms data loaded / how many objects are in the scene).
+  const status = document.createElement('div');
+  status.style.cssText =
+    'position:fixed;left:12px;bottom:12px;z-index:10;font:11px system-ui;color:#9fb4e6;opacity:.75;pointer-events:none;';
+  status.textContent = `${objects.length.toLocaleString()} objects`;
+  container.appendChild(status);
+
   const stage = createStage(container);
   const earth = createEarth(stage.scene);
   const cloud = createObjectCloud(stage.scene, objects);

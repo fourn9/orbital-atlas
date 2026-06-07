@@ -10,7 +10,7 @@ export function createPicker(
   points: THREE.Points,
 ): Picker {
   const raycaster = new THREE.Raycaster();
-  raycaster.params.Points = { threshold: 0.12 };
+  raycaster.params.Points = { threshold: 0.6 };
   const ndc = new THREE.Vector2();
 
   return {

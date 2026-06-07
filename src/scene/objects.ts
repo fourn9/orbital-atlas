@@ -29,7 +29,7 @@ export function createObjectCloud(scene: THREE.Scene, objects: OrbitalObject[]):
   geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
   const material = new THREE.PointsMaterial({
-    size: 0.08, vertexColors: true, sizeAttenuation: true, transparent: true,
+    size: 0.14, vertexColors: true, sizeAttenuation: true, transparent: true,
   });
 
   const points = new THREE.Points(geo, material);
