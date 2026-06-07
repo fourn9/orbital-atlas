@@ -9,7 +9,7 @@ export interface Earth {
 }
 
 export function createEarth(scene: THREE.Scene): Earth {
-  const texture = new THREE.TextureLoader().load('/earth-night.jpg');
+  const texture = new THREE.TextureLoader().load(import.meta.env.BASE_URL + 'earth-night.jpg');
   texture.colorSpace = THREE.SRGBColorSpace;
   const mesh = new THREE.Mesh(
     new THREE.SphereGeometry(EARTH_RADIUS, 64, 64),
