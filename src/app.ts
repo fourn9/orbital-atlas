@@ -14,18 +14,12 @@ export async function startApp(container: HTMLElement): Promise<void> {
   const objects = await loadCatalog();
   const satrecs = objects.map((o) => twoline2satrec(o.tleLine1, o.tleLine2));
 
-  // Small status readout (confirms data loaded / how many objects are in the scene).
-  const status = document.createElement('div');
-  status.style.cssText =
-    'position:fixed;left:12px;bottom:12px;z-index:10;font:11px system-ui;color:#9fb4e6;opacity:.75;pointer-events:none;';
-  status.textContent = `${objects.length.toLocaleString()} objects`;
-  container.appendChild(status);
-
   const stage = createStage(container);
   const earth = createEarth(stage.scene);
   const cloud = createObjectCloud(stage.scene, objects);
   const orbit = createOrbitPath(stage.scene);
   const picker = createPicker(stage.renderer, stage.camera, cloud.points);
+  const canvas = stage.renderer.domElement;
 
   let filters: FilterState = { facility: true, debris: true, bands: { LEO: true, MEO: true, GEO: true } };
   let currentMask: boolean[] = [];
@@ -36,10 +30,22 @@ export async function startApp(container: HTMLElement): Promise<void> {
   let selected: number | null = null;
   const panel = createDetailPanel(container, () => { selected = null; orbit.hide(); panel.hide(); });
 
+  // ---- TEMP DEBUG HUD (remove once interaction is confirmed) ----
+  let frames = 0, winClk = 0, cvsClk = 0, lastPick = '-';
+  const hud = document.createElement('div');
+  hud.style.cssText =
+    'position:fixed;top:6px;left:50%;transform:translateX(-50%);z-index:30;pointer-events:none;' +
+    'font:11px monospace;color:#9effa0;background:rgba(0,0,0,.7);padding:4px 8px;border-radius:4px;white-space:pre;';
+  container.appendChild(hud);
+  window.addEventListener('pointerdown', () => { winClk++; }, true);
+  canvas.addEventListener('pointerdown', () => { cvsClk++; });
+  // ---------------------------------------------------------------
+
   // Click an object to show its detail panel + orbit ring.
-  stage.renderer.domElement.addEventListener('pointerdown', (ev) => {
+  canvas.addEventListener('pointerdown', (ev) => {
     const idx = picker.pick(ev.clientX, ev.clientY);
-    if (idx === null || !currentMask[idx]) return; // ignore filtered-out (hidden) objects
+    lastPick = idx === null ? 'none' : String(idx);
+    if (idx === null || !currentMask[idx]) return;
     selected = idx;
     const now = new Date();
     panel.show(objects[idx], kinematicsAt(satrecs[idx], now));
@@ -55,5 +61,13 @@ export async function startApp(container: HTMLElement): Promise<void> {
     const now = new Date();
     earth.update(now);
     if (selected !== null) panel.update(kinematicsAt(satrecs[selected], now));
+
+    frames++;
+    if (frames % 6 === 0) {
+      const c = document.elementFromPoint(Math.floor(window.innerWidth / 2), Math.floor(window.innerHeight / 2));
+      const ctr = c ? `${c.tagName}${c.id ? '#' + c.id : ''}` : 'none';
+      hud.textContent =
+        `obj:${objects.length}  frame:${frames}  winClk:${winClk}  cvsClk:${cvsClk}  ctr:${ctr}  pick:${lastPick}`;
+    }
   });
 }
