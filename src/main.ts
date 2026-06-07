@@ -1,6 +1,7 @@
 import { createStage } from './scene/scene-setup';
 import { createEarth } from './scene/earth';
 import { createObjectCloud } from './scene/objects';
+import { createPicker } from './scene/picking';
 import { loadCatalog } from './data/catalog';
 
 const app = document.getElementById('app')!;
@@ -9,6 +10,12 @@ const earth = createEarth(stage.scene);
 
 const objects = await loadCatalog();
 const cloud = createObjectCloud(stage.scene, objects);
+
+const picker = createPicker(stage.renderer, stage.camera, cloud.points);
+stage.renderer.domElement.addEventListener('pointerdown', (ev) => {
+  const idx = picker.pick(ev.clientX, ev.clientY);
+  if (idx !== null) console.log('picked', objects[idx].name);
+});
 
 const worker = new Worker(new URL('./worker/propagate.worker.ts', import.meta.url), { type: 'module' });
 worker.postMessage({ type: 'init', tles: objects.map((o) => ({ l1: o.tleLine1, l2: o.tleLine2 })) });
