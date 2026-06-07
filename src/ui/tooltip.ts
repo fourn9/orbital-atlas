@@ -17,16 +17,26 @@ export function createTooltip(parent: HTMLElement): Tooltip {
     'position:fixed;pointer-events:none;z-index:20;display:none;max-width:240px;' +
     'padding:6px 9px;border-radius:6px;font:12px system-ui;color:#eaf1ff;white-space:nowrap;' +
     'background:rgba(8,12,26,.92);border:1px solid rgba(127,208,255,.45);box-shadow:0 2px 10px rgba(0,0,0,.5);';
+
+  // Structure built once; only textContent is updated (no innerHTML with feed data → no XSS).
+  const titleEl = document.createElement('div');
+  titleEl.style.cssText = 'font-weight:600;margin-bottom:2px;';
+  const subEl = document.createElement('div');
+  subEl.style.opacity = '.85';
+  const typeEl = document.createElement('span');
+  typeEl.style.textTransform = 'capitalize';
+  const restEl = document.createElement('span');
+  subEl.append(typeEl, restEl);
+  el.append(titleEl, subEl);
   parent.appendChild(el);
 
   return {
     show: (obj, altitudeKm, x, y) => {
       const [title, sub] = formatTooltip(obj, altitudeKm);
-      const accent = obj.type === 'facility' ? '#7fd0ff' : '#ff9a4d';
-      el.innerHTML =
-        `<div style="font-weight:600;margin-bottom:2px;">${title}</div>` +
-        `<div style="opacity:.85;"><span style="color:${accent};text-transform:capitalize;">${obj.type}</span>` +
-        ` · ${obj.orbitBand} · ${sub.split('· ').pop()}</div>`;
+      titleEl.textContent = title;                       // untrusted catalog name → textContent
+      typeEl.textContent = obj.type;
+      typeEl.style.color = obj.type === 'facility' ? '#7fd0ff' : '#ff9a4d';
+      restEl.textContent = ` · ${obj.orbitBand} · ${sub.split(' · ').pop()}`;
       el.style.display = 'block';
       el.style.left = Math.min(x + 14, window.innerWidth - el.offsetWidth - 8) + 'px';
       el.style.top = Math.min(y + 14, window.innerHeight - el.offsetHeight - 8) + 'px';
