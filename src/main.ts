@@ -1,2 +1,3 @@
+import { createStage } from './scene/scene-setup';
 const app = document.getElementById('app')!;
-app.textContent = 'Orbital Atlas booting…';
+createStage(app);
