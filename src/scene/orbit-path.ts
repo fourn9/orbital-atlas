@@ -4,7 +4,8 @@ import type { SatRec } from 'satellite.js';
 import { orbitalPeriodMin } from '../propagation/orbital-math';
 import { SCENE_SCALE } from '../propagation/propagate-core';
 
-// Samples one full orbital period starting at `start`. Returns flat xyz (scaled).
+// Samples one full orbital period from `start`. Returns flat xyz (scaled),
+// remapped ECI (x,y,z) -> scene (x, z, -y) to match the point cloud + Earth.
 export function samplePath(satrec: SatRec, start: Date, samples: number): Float32Array {
   const periodMs = orbitalPeriodMin(satrec) * 60 * 1000;
   const out = new Float32Array(samples * 3);
@@ -12,7 +13,11 @@ export function samplePath(satrec: SatRec, start: Date, samples: number): Float3
     const t = new Date(start.getTime() + (periodMs * i) / samples);
     const pv = propagate(satrec, t);
     const p = pv && pv.position ? (pv.position as { x: number; y: number; z: number }) : null;
-    if (p && Number.isFinite(p.x)) { out[i*3] = p.x*SCENE_SCALE; out[i*3+1] = p.y*SCENE_SCALE; out[i*3+2] = p.z*SCENE_SCALE; }
+    if (p && Number.isFinite(p.x)) {
+      out[i * 3] = p.x * SCENE_SCALE;
+      out[i * 3 + 1] = p.z * SCENE_SCALE;
+      out[i * 3 + 2] = -p.y * SCENE_SCALE;
+    }
   }
   return out;
 }

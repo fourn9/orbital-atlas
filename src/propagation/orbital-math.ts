@@ -16,16 +16,16 @@ export function gmstRadians(date: Date): number {
 }
 
 export function kinematicsAt(satrec: SatRec, date: Date): ObjectKinematics {
+  const periodMin = orbitalPeriodMin(satrec);
+  const inclinationDeg = (satrec.inclo * 180) / Math.PI;
   const pv = propagate(satrec, date);
-  const r = pv!.position as { x: number; y: number; z: number };
-  const v = pv!.velocity as { x: number; y: number; z: number };
+  const r = pv && pv.position ? (pv.position as { x: number; y: number; z: number }) : null;
+  const v = pv && pv.velocity ? (pv.velocity as { x: number; y: number; z: number }) : null;
+  if (!r || !Number.isFinite(r.x)) {
+    return { altitudeKm: NaN, speedKmS: NaN, periodMin, inclinationDeg };
+  }
   const radius = Math.hypot(r.x, r.y, r.z);
   const altitudeKm = radius - EARTH_RADIUS_KM;
   const speedKmS = v ? Math.hypot(v.x, v.y, v.z) : Math.sqrt(MU / radius);
-  return {
-    altitudeKm,
-    speedKmS,
-    periodMin: orbitalPeriodMin(satrec),
-    inclinationDeg: (satrec.inclo * 180) / Math.PI,
-  };
+  return { altitudeKm, speedKmS, periodMin, inclinationDeg };
 }

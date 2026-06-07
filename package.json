@@ -1,8 +1,7 @@
 {
-  "name": "impl",
+  "name": "orbital-atlas",
   "version": "1.0.0",
   "description": "Interactive 3D viewer of Earth's orbital environment — live-propagated satellites, stations, and debris on a dark night-Earth globe. Rotate 360°, zoom, click any object for details, filter layers, and trace orbit paths.",
-  "main": "index.js",
   "directories": {
     "doc": "docs"
   },

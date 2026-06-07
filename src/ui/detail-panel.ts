@@ -1,11 +1,13 @@
 import type { OrbitalObject, ObjectKinematics } from '../types';
 
 export function formatKinematics(k: ObjectKinematics): [string, string][] {
+  const num = (v: number, digits: number, unit: string): string =>
+    Number.isFinite(v) ? `${digits === 0 ? Math.round(v) : v.toFixed(digits)} ${unit}` : `— ${unit}`;
   return [
-    ['Altitude', `${Math.round(k.altitudeKm)} km`],
-    ['Speed', `${k.speedKmS.toFixed(2)} km/s`],
-    ['Period', `${k.periodMin.toFixed(1)} min`],
-    ['Inclination', `${k.inclinationDeg.toFixed(1)}°`],
+    ['Altitude', num(k.altitudeKm, 0, 'km')],
+    ['Speed', num(k.speedKmS, 2, 'km/s')],
+    ['Period', num(k.periodMin, 1, 'min')],
+    ['Inclination', Number.isFinite(k.inclinationDeg) ? `${k.inclinationDeg.toFixed(1)}°` : '—°'],
   ];
 }
 

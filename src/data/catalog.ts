@@ -43,6 +43,9 @@ export async function loadCatalog(): Promise<OrbitalObject[]> {
   } catch {
     if (cache) return cache.objects;
     const res = await fetch('/tle-snapshot.txt');
-    return parseTle(await res.text(), 'active', 'facility');
+    const objs = parseTle(await res.text(), 'snapshot', 'facility');
+    // The bundled snapshot mixes payloads + rocket bodies/debris; infer type by name.
+    for (const o of objs) if (/\bDEB\b|DEBRIS|R\/B|ROCKET/i.test(o.name)) o.type = 'debris';
+    return objs;
   }
 }

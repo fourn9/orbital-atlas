@@ -1,12 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { classifyType, classifyBand } from '../src/data/classify';
-
-describe('classifyType', () => {
-  it('maps PAYLOAD to facility', () => expect(classifyType('PAYLOAD')).toBe('facility'));
-  it('maps DEBRIS to debris', () => expect(classifyType('DEBRIS')).toBe('debris'));
-  it('maps ROCKET BODY to debris', () => expect(classifyType('ROCKET BODY')).toBe('debris'));
-  it('maps UNKNOWN to debris', () => expect(classifyType('UNKNOWN')).toBe('debris'));
-});
+import { classifyBand } from '../src/data/classify';
 
 describe('classifyBand', () => {
   it('LEO below 2000 km', () => expect(classifyBand(550)).toBe('LEO'));

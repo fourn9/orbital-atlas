@@ -21,7 +21,8 @@ export async function startApp(container: HTMLElement): Promise<void> {
   const picker = createPicker(stage.renderer, stage.camera, cloud.points);
 
   let filters: FilterState = { facility: true, debris: true, bands: { LEO: true, MEO: true, GEO: true } };
-  const applyFilters = () => cloud.setVisibility(computeMask(objects, filters));
+  let currentMask: boolean[] = [];
+  const applyFilters = () => { currentMask = computeMask(objects, filters); cloud.setVisibility(currentMask); };
   createSidebar(container, filters, (f) => { filters = f; applyFilters(); });
   applyFilters();
 
@@ -30,7 +31,7 @@ export async function startApp(container: HTMLElement): Promise<void> {
 
   stage.renderer.domElement.addEventListener('pointerdown', (ev) => {
     const idx = picker.pick(ev.clientX, ev.clientY);
-    if (idx === null) return;
+    if (idx === null || !currentMask[idx]) return; // ignore filtered-out (hidden) objects
     selected = idx;
     const now = new Date();
     panel.show(objects[idx], kinematicsAt(satrecs[idx], now));
