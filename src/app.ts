@@ -6,7 +6,6 @@ import { createPicker } from './scene/picking';
 import { createOrbitPath } from './scene/orbit-path';
 import { createSidebar, computeMask } from './ui/sidebar';
 import { createDetailPanel } from './ui/detail-panel';
-import { createTooltip } from './ui/tooltip';
 import { kinematicsAt } from './propagation/orbital-math';
 import { twoline2satrec } from 'satellite.js';
 import type { FilterState } from './types';
@@ -30,15 +29,8 @@ export async function startApp(container: HTMLElement): Promise<void> {
   let selected: number | null = null;
   const panel = createDetailPanel(container, () => { selected = null; orbit.hide(); panel.hide(); });
 
-  // Hover: preview the object under the cursor in a tooltip that follows the mouse.
-  const tooltip = createTooltip(container);
-  const canvas = stage.renderer.domElement;
-  let hoverX = 0, hoverY = 0, hovering = false;
-  canvas.addEventListener('pointermove', (ev) => { hoverX = ev.clientX; hoverY = ev.clientY; hovering = true; });
-  canvas.addEventListener('pointerleave', () => { hovering = false; tooltip.hide(); canvas.style.cursor = 'default'; });
-
-  // Click: pin the full detail panel + orbit ring.
-  canvas.addEventListener('pointerdown', (ev) => {
+  // Click an object to show its detail panel + orbit ring.
+  stage.renderer.domElement.addEventListener('pointerdown', (ev) => {
     const idx = picker.pick(ev.clientX, ev.clientY);
     if (idx === null || !currentMask[idx]) return; // ignore filtered-out (hidden) objects
     selected = idx;
@@ -56,17 +48,5 @@ export async function startApp(container: HTMLElement): Promise<void> {
     const now = new Date();
     earth.update(now);
     if (selected !== null) panel.update(kinematicsAt(satrecs[selected], now));
-
-    // Resolve hover once per frame (throttles raycasting to the frame rate).
-    if (hovering) {
-      const idx = picker.pick(hoverX, hoverY);
-      if (idx !== null && currentMask[idx]) {
-        tooltip.show(objects[idx], kinematicsAt(satrecs[idx], now).altitudeKm, hoverX, hoverY);
-        canvas.style.cursor = 'pointer';
-      } else {
-        tooltip.hide();
-        canvas.style.cursor = 'default';
-      }
-    }
   });
 }
